@@ -1,9 +1,12 @@
 from flask import Flask, request
 from flask_restful import Resource, Api
+from flask_jwt import JWT, jwt_required
+from session4.security import authenticate, identity
 
 app = Flask(__name__)
 app.secret_key = 'vita'
 api = Api(app)
+jwt = JWT(app, authenticate, identity)  # /auth
 
 items = []
 
@@ -14,9 +17,10 @@ class HelloWorld(Resource):
 
 
 class Item(Resource):
+    @jwt_required()
     def get(self, name):
         item = next(filter(lambda x: x['name'] == name, items), None)
-        return {'item': None}, 200 if item else 404
+        return {'item': item}, 200 if item else 404
 
     def post(self, name):
         if next(filter(lambda x: x['name'] == name, items), None) is not None:
@@ -26,10 +30,12 @@ class Item(Resource):
         items.append(item)
         return item, 201
 
-    def put(self, name):
-        pass
-
     def delete(self, name):
+        global items
+        items = list(filter(lambda x: x['name'] != name, items))
+        return {'message': "The item '{}' has been deleted".format(name)}
+
+    def put(self, name):
         pass
 
 

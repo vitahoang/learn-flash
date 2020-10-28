@@ -1,4 +1,4 @@
-from user import User
+from session4.user import User
 
 users = [
     User(1, 'bob', 'asdf')
