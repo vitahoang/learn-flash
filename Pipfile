@@ -12,6 +12,7 @@ pytest = "*"
 requests = "*"
 flash = "*"
 flask-restful = "*"
+flask-jwt = "*"
 
 [requires]
 python_version = "3.8"
