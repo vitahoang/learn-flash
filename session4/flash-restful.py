@@ -1,7 +1,7 @@
 from flask import Flask, request
 from flask_restful import Resource, Api, reqparse
 from flask_jwt import JWT, jwt_required
-from session4.security import authenticate, identity
+from security import authenticate, identity
 
 app = Flask(__name__)
 app.secret_key = 'vita'
