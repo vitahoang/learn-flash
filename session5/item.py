@@ -4,7 +4,17 @@ from flask_jwt import jwt_required
 
 
 class ItemList(Resource):
+    table_name = 'items'
+
     def get(self):
+        connection = sqlite3.connect('data.db')
+        cursor = connection.cursor()
+        query = "SELECT * FROM {table} ".format(table=self.table_name)
+        result = cursor.execute(query)
+        items = []
+        for row in result:
+            items.append({'id': row[0], 'name': row[1], 'price': row[2]})
+        connection.close()
         return {'items': items}
 
 
@@ -30,17 +40,13 @@ class Item(Resource):
             return {'item': {'id': row[0], 'name': row[1], 'price': row[2]}}
 
     @staticmethod
-    def create_new_item(name):
-        data = Item.parser.parse_args()
-        item = {'name': name, 'price': data['price']}
-
+    def create_new_item(item):
         connection = sqlite3.connect('data.db')
         cursor = connection.cursor()
         query = "INSERT INTO {table} VALUES (NULL, ?, ?)".format(table=Item.table_name)
         cursor.execute(query, (item['name'], item['price']))
         connection.commit()
         connection.close()
-        return item, 201
 
     @jwt_required()
     def get(self, name):
@@ -52,7 +58,13 @@ class Item(Resource):
     def post(self, name):
         if self.find_by_name(name):
             return {'Message': "The item '{}' is already exist".format(name)}, 400
-        return self.create_new_item(name)
+        data = Item.parser.parse_args()
+        item = {'name': name, 'price': data['price']}
+        try:
+            self.create_new_item(item)
+        except:
+            return {'message': 'An error occurred inserting the item'}, 500  # Internal Server Error
+        return item, 201
 
     def delete(self, name):
         if self.find_by_name(name) is None:
@@ -77,4 +89,3 @@ class Item(Resource):
         connection.commit()
         connection.close()
         return {'message': "Updated successfully", 'item': item}
-
