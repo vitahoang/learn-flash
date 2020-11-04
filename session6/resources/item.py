@@ -1,12 +1,12 @@
 from flask_jwt import jwt_required
 from flask_restful import Resource, reqparse
 
-from models.itemmodal import ItemModal
+from models.itemmodel import ItemModel
 
 
 class ItemList(Resource):
     def get(self):
-        result = ItemModal.query.order_by(ItemModal.id).all()
+        result = ItemModel.query.order_by(ItemModel.id).all()
         items = []
         for row in result:
             items.append({'id': row.id, 'name': row.name, 'price': row.price})
@@ -19,30 +19,37 @@ class Item(Resource):
         'price',
         type=float,
         required=True,
-        help="This field cannot be blank"
+        help="Price is required"
+    )
+    parser = reqparse.RequestParser()
+    parser.add_argument(
+        'store_id',
+        type=int,
+        required=True,
+        help="Store ID is required"
     )
 
     @jwt_required()
     def get(self, name):
-        item = ItemModal.find_by_name(name)
+        item = ItemModel.find_by_name(name)
         if item:
             return item.json()
         return {'message': 'Item not found'}, 404
 
     def post(self, name):
-        if ItemModal.find_by_name(name):
+        if ItemModel.find_by_name(name):
             return {'Message': "The item '{}' is already exist".format(name)}, 400
         data = Item.parser.parse_args()
-        new_item = ItemModal(None, name, data['price'])
+        new_item = ItemModel(None, name, data['price'], data['store_id'])
         try:
             new_item.save_to_db()
-            new_item = ItemModal.find_by_name(name)
+            new_item = ItemModel.find_by_name(name)
         except:
             return {'message': 'An error occurred inserting the item'}, 500  # Internal Server Error
         return new_item.json(), 201
 
     def delete(self, name):
-        item = ItemModal.find_by_name(name)
+        item = ItemModel.find_by_name(name)
         if item is None:
             return {'Message': "The item '{}' is not exist".format(name)}, 404
         try:
@@ -53,22 +60,23 @@ class Item(Resource):
 
     def put(self, name):
         data = Item.parser.parse_args()
-        item = ItemModal.find_by_name(name)
+        item = ItemModel.find_by_name(name)
 
         if item is None:
-            new_item = ItemModal(None, name, data['price'])
+            new_item = ItemModel(None, name, data['price'], data['store_id'])
             try:
                 new_item.save_to_db()
-                new_item = ItemModal.find_by_name(name)
+                new_item = ItemModel.find_by_name(name)
             except:
                 return {'message': 'An error occurred inserting the item'}, 500  # Internal Server Error
             return new_item.json(), 201
 
         else:
             item.price = data['price']
+            item.store_id = data['store_id']
             try:
                 item.save_to_db()
-                item = ItemModal.find_by_name(name)
+                item = ItemModel.find_by_name(name)
             except:
                 return {'message': 'An error occurred updating the item'}, 500  # Internal Server Error
         return {'message': "Updated successfully", 'item': item.json()}

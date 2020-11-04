@@ -2,19 +2,21 @@ import sqlite3
 from db import db
 
 
-class ItemModal(db.Model):
-    __tablename__ = 'items'
+class StoreModel(db.Model):
+    __tablename__ = 'stores'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80))
-    price = db.Column(db.Float(precision=2))
+    items = db.relationship('ItemModal', lazy='dynamic')
 
-    def __init__(self, _id, name, price):
+    def __init__(self, _id, name):
         self.id = _id
         self.name = name
-        self.price = price
+
+    def json_items(self):
+        return {'id': self.id, 'name': self.name, 'item': [item.json() for item in self.items.all()]}
 
     def json(self):
-        return {'id': self.id, 'name': self.name, 'price': self.price}
+        return {'id': self.id, 'name': self.name}
 
     @classmethod
     def find_by_name(cls, name):

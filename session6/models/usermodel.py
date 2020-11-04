@@ -2,7 +2,7 @@ import sqlite3
 from db import db
 
 
-class UserModal(db.Model):
+class UserModel(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80))

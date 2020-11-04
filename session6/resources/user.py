@@ -1,6 +1,6 @@
 from flask_restful import Resource, reqparse
 
-from models.usermodal import UserModal
+from models.usermodel import UserModel
 
 
 class UserRegister(Resource):
@@ -20,12 +20,12 @@ class UserRegister(Resource):
 
     def post(self):
         data = UserRegister.parser.parse_args()
-        if UserModal.find_by_username(data['username']):
+        if UserModel.find_by_username(data['username']):
             return {"message": "User is already exists"}, 400
         try:
-            new_user = UserModal(None, data['username'], data['password'])
+            new_user = UserModel(None, data['username'], data['password'])
             new_user.insert_to_db()
-            new_user = UserModal.find_by_username(data['username'])
+            new_user = UserModel.find_by_username(data['username'])
         except:
             return {'message': 'An error occurred register user '}, 500  # Internal Server Error
         return {
