@@ -1,5 +1,5 @@
-import sqlite3
 from flask_restful import Resource, reqparse
+
 from models.usermodal import UserModal
 
 
@@ -20,17 +20,18 @@ class UserRegister(Resource):
 
     def post(self):
         data = UserRegister.parser.parse_args()
-
         if UserModal.find_by_username(data['username']):
-            return {"message": "User with that username already exists."}, 400
-
-        connection = sqlite3.connect('data.db')
-        cursor = connection.cursor()
-
-        query = "INSERT INTO users VALUES (NULL, ?, ?)"
-        cursor.execute(query, (data['username'], data['password']))
-
-        connection.commit()
-        connection.close()
-
-        return {"message": "User created successfully."}, 201
+            return {"message": "User is already exists"}, 400
+        try:
+            new_user = UserModal(None, data['username'], data['password'])
+            new_user.insert_to_db()
+            new_user = UserModal.find_by_username(data['username'])
+        except:
+            return {'message': 'An error occurred register user '}, 500  # Internal Server Error
+        return {
+                "message": "User created successfully",
+                "user": {
+                    "user_id": new_user.id,
+                    "user_name": new_user.username,
+                    }
+                }, 201
