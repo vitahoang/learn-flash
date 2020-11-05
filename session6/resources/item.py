@@ -9,7 +9,7 @@ class ItemList(Resource):
         result = ItemModel.query.order_by(ItemModel.id).all()
         items = []
         for row in result:
-            items.append({'id': row.id, 'name': row.name, 'price': row.price})
+            items.append(row.json())
         return {'items': items}
 
 
@@ -21,7 +21,6 @@ class Item(Resource):
         required=True,
         help="Price is required"
     )
-    parser = reqparse.RequestParser()
     parser.add_argument(
         'store_id',
         type=int,
