@@ -17,7 +17,7 @@ jwt = JWT(app, authenticate, identity)  # /auth
 
 class HelloWorld(Resource):
     def get(self):
-        return {'hello': 'world!'}
+        return {'Vita': 'Love Leo!'}
 
 
 api.add_resource(HelloWorld, '/')
